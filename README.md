@@ -1,5 +1,4 @@
 # CNL_final
 
-## Salute to the God, Jason
-
-This repository aims to record what God Jason did.
+## Salute to the Comrade, Eric
+This repository aims to record what Comrade Eric did.
