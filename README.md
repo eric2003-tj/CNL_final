@@ -2,4 +2,4 @@
 
 ## Salute to the God, Jason
 
-This repository aims to record what God Jason do.
+This repository aims to record what God Jason did.
