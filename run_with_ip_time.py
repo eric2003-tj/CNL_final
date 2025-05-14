@@ -4,8 +4,9 @@ import os
 import glob
 
 os.makedirs("mixed", exist_ok=True)
-pcap_files = sorted(glob.glob("./new_dataset/pcap/unprocessed/*.pcap"))
-
+pcap_files = sorted(glob.glob("./new_dataset/*.pcap"))
+def count_files(directory):
+    return sum(1 for entry in os.scandir(directory) if entry.is_file())
 for file_cnt, pcap_file in enumerate(pcap_files):
     print(f"📦 Processing: {pcap_file}")
     packets = rdpcap(pcap_file)
@@ -67,6 +68,7 @@ for file_cnt, pcap_file in enumerate(pcap_files):
                 "index": i
             })
     df = pd.DataFrame(data)
-    out_file = f"new_dataset/csv/traffic_data{file_cnt}.csv"
+    file_num = count_files("new_dataset/csv")
+    out_file = f"new_dataset/csv/traffic_data{file_num}.csv"
     df.to_csv(out_file, index=False)
     print(f"✅ Saved: {out_file} ({len(df)} packets)")
