@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # 設定資料夾根目錄（此資料夾下有多個子資料夾）
-root_folder = "./dataset/normal/"  # ← 請修改為你的實際資料夾路徑
+root_folder = "./new_dataset/csv/"  # ← 請修改為你的實際資料夾路徑
 
 # 準備儲存所有讀到的 DataFrame
 df_list = []

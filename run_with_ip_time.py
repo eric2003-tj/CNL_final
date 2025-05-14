@@ -4,7 +4,7 @@ import os
 import glob
 
 os.makedirs("mixed", exist_ok=True)
-pcap_files = sorted(glob.glob("chunk_*.pcap"))
+pcap_files = sorted(glob.glob("./new_dataset/pcap/unprocessed/*.pcap"))
 
 for file_cnt, pcap_file in enumerate(pcap_files):
     print(f"📦 Processing: {pcap_file}")
@@ -66,8 +66,7 @@ for file_cnt, pcap_file in enumerate(pcap_files):
                 "tcp_window": tcp_window,
                 "index": i
             })
-
     df = pd.DataFrame(data)
-    out_file = f"mixed/traffic_data{file_cnt}.csv"
+    out_file = f"new_dataset/csv/traffic_data{file_cnt}.csv"
     df.to_csv(out_file, index=False)
     print(f"✅ Saved: {out_file} ({len(df)} packets)")
