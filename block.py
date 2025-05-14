@@ -19,7 +19,9 @@ df.fillna({
     "payload_len": 0,
     "ttl": 0,
     "tcp_flags_int": 0,
-    "tcp_window": 0
+    "tcp_window": 0,
+    "global_delta_time": 0,
+    "src_ip_delta_time": 0
 }, inplace=True)
 
 # 編碼協定欄位
@@ -27,8 +29,16 @@ df["protocol_encoded"] = pd.factorize(df["protocol"])[0]
 
 # 建立特徵矩陣
 features = [
-    "protocol_encoded", "src_port", "dst_port", "packet_length",
-    "payload_len", "ttl", "tcp_flags_int", "tcp_window"
+    "protocol_encoded",
+    "src_port",
+    "dst_port",
+    "packet_length",
+    "payload_len",
+    "ttl",
+    "tcp_flags_int",
+    "tcp_window",
+    "global_delta_time",
+    "src_ip_delta_time"
 ]
 X = scaler.transform(df[features])
 
