@@ -5,6 +5,7 @@ import time
 import shutil
 from scapy.all import rdpcap, IP, TCP, UDP, Raw
 import pandas as pd
+import numpy as np
 import joblib
 import subprocess
 
@@ -29,7 +30,6 @@ def auto_unblock():
     blocked_path = "blocked_ips.txt"
     if not os.path.exists(blocked_path):
         return
-
     with open(blocked_path, "r") as f:
         lines = f.read().splitlines()
 
@@ -64,7 +64,6 @@ def process_pcap(pcap_file):
     print(f"\n📦 處理檔案: {pcap_file}")
     packets = rdpcap(pcap_file)
     data = []
-
     global_last_time = None
     last_seen_time = {}
 
@@ -73,10 +72,8 @@ def process_pcap(pcap_file):
             t = pkt.time
             src_ip = pkt[IP].src
             dst_ip = pkt[IP].dst
-
             global_delta = t - global_last_time if global_last_time else -10
             global_last_time = t
-
             ip_delta = t - last_seen_time[src_ip] if src_ip in last_seen_time else -10
             last_seen_time[src_ip] = t
 
@@ -104,7 +101,6 @@ def process_pcap(pcap_file):
 
             data.append({
                 "timestamp": t,
-                "global_delta_time": global_delta,
                 "src_ip_delta_time": ip_delta,
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
@@ -125,6 +121,15 @@ def process_pcap(pcap_file):
         return
 
     df = pd.DataFrame(data)
+
+    # 新特徵：src_ip_avg_freq, log_src_ip_avg_freq
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", errors="coerce")
+    ip_stats = df.groupby("src_ip")["timestamp"].agg(["count", "min", "max"])
+    ip_stats["duration"] = (ip_stats["max"] - ip_stats["min"]).dt.total_seconds().replace(0, 1)
+    ip_stats["avg_freq"] = ip_stats["count"] / ip_stats["duration"]
+    df["src_ip_avg_freq"] = df["src_ip"].map(ip_stats["avg_freq"].to_dict())
+    df["log_src_ip_avg_freq"] = np.log1p(df["src_ip_avg_freq"])
+
     file_num = count_files("new_dataset/csv")
     csv_path = f"new_dataset/csv/traffic_data{file_num}.csv"
     df.to_csv(csv_path, index=False)
@@ -135,30 +140,29 @@ def process_pcap(pcap_file):
 def predict_and_block(csv_path):
     df = pd.read_csv(csv_path)
     df.fillna({
-    "src_ip_delta_time": 0,
-    "src_port": -1,
-    "dst_port": -1,
-    "packet_length": 0,
-    "payload_len": 0,
-    "ttl": 0,
-    "tcp_flags_int": 0,
-    "tcp_window": 0,
-    "log_src_ip_avg_freq": 0
-}, inplace=True)
-
-    df["protocol_encoded"] = pd.factorize(df["protocol"])[0]
+        "src_ip_delta_time": 0,
+        "src_port": -1,
+        "dst_port": -1,
+        "packet_length": 0,
+        "payload_len": 0,
+        "ttl": 0,
+        "tcp_flags_int": 0,
+        "tcp_window": 0,
+        "log_src_ip_avg_freq": 0
+    }, inplace=True)
 
     features = [
-    "src_ip_delta_time",
-    "src_port",
-    "dst_port",
-    "packet_length",
-    "payload_len",
-    "ttl",
-    "tcp_flags_int",
-    "tcp_window",
-    "log_src_ip_avg_freq"
-]
+        "src_ip_delta_time",
+        "src_port",
+        "dst_port",
+        "packet_length",
+        "payload_len",
+        "ttl",
+        "tcp_flags_int",
+        "tcp_window",
+        "log_src_ip_avg_freq"
+    ]
+
     X = scaler.transform(df[features])
     df["prediction"] = model.predict(X)
     df["anomaly"] = df["prediction"].apply(lambda x: 1 if x == -1 else 0)
