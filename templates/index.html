@@ -1,44 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>防火牆控制面板</title>
-    <script>
-        async function fetchBlockedIPs() {
-            const res = await fetch("/api/blocked_ips");
-            const data = await res.json();
-            const table = document.getElementById("ipTable");
-            table.innerHTML = "<tr><th>IP 位址</th><th>封鎖秒數</th><th>操作</th></tr>";
-            data.forEach(entry => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${entry.ip}</td>
-                    <td>${entry.seconds_blocked}</td>
-                    <td><button onclick="unblock('${entry.ip}')">解封</button></td>
-                `;
-                table.appendChild(row);
-            });
-        }
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100 flex flex-col">
+    <!-- Header -->
+    <header class="bg-indigo-600 shadow text-white py-4">
+        <h1 class="text-2xl font-semibold text-center">防火牆異常 IP 控制面板</h1>
+    </header>
 
-        async function unblock(ip) {
-            const res = await fetch("/api/unblock", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ip: ip })
-            });
-            if (res.ok) {
-                alert(`✅ 已解封 IP: ${ip}`);
-                fetchBlockedIPs();
-            } else {
-                alert(`❌ 解封失敗`);
+    <!-- Main -->
+    <main class="container mx-auto flex-1 px-4 py-6">
+        <div class="bg-white rounded-lg shadow-lg overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-6 py-3">IP 位址</th>
+                        <th class="px-6 py-3">封鎖秒數</th>
+                        <th class="px-6 py-3">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="ipTableBody" class="divide-y divide-gray-200"></tbody>
+            </table>
+            <!-- Empty‑state message -->
+            <div id="emptyState" class="hidden p-6 text-center text-gray-500">目前沒有被封鎖的 IP 🎉</div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-gray-400 py-4">&copy; 2025 Firewall Dashboard</footer>
+
+    <script>
+        // 取得封鎖 IP 清單並更新表格
+        async function fetchBlockedIPs() {
+            try {
+                const res = await fetch("/api/blocked_ips");
+                const data = await res.json();
+                const tbody = document.getElementById("ipTableBody");
+                const empty = document.getElementById("emptyState");
+
+                tbody.innerHTML = "";
+
+                if (data.length === 0) {
+                    empty.classList.remove("hidden");
+                    return;
+                }
+                empty.classList.add("hidden");
+
+                data.forEach((entry) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-mono">${entry.ip}</td>
+                        <td class="px-6 py-4">${entry.seconds_blocked}</td>
+                        <td class="px-6 py-4">
+                            <button class="px-3 py-1 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white" onclick="unblock('${entry.ip}')">解封</button>
+                        </td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                alert("❌ 無法載入 IP 清單");
+                console.error(err);
             }
         }
 
-        window.onload = fetchBlockedIPs;
+        // 解封指定 IP
+        async function unblock(ip) {
+            try {
+                const res = await fetch("/api/unblock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ip }),
+                });
+                if (res.ok) {
+                    alert(`✅ 已解封 IP: ${ip}`);
+                    fetchBlockedIPs();
+                } else {
+                    alert("❌ 解封失敗");
+                }
+            } catch (err) {
+                alert("❌ 解封失敗");
+                console.error(err);
+            }
+        }
+
+        // 初始載入 + 每 10 秒自動刷新
+        window.onload = () => {
+            fetchBlockedIPs();
+            setInterval(fetchBlockedIPs, 10_000);
+        };
     </script>
-</head>
-<body>
-    <h2>防火牆異常 IP 控制面板</h2>
-    <table border="1" id="ipTable"></table>
 </body>
 </html>
