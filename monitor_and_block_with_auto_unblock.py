@@ -1,4 +1,3 @@
-
 import os
 import glob
 import time
@@ -20,7 +19,7 @@ scaler = joblib.load("feature_scaler.joblib")
 # === 追蹤已處理過的 pcap 檔案 ===
 processed_set = set(os.listdir("processed"))
 
-# === 自動解封設定 ===
+# === 自動解封設定（秒） ===
 UNBLOCK_AFTER_SECONDS = 600  # 10 分鐘
 
 def count_files(directory):
@@ -122,13 +121,12 @@ def process_pcap(pcap_file):
 
     df = pd.DataFrame(data)
 
-    # 新特徵：src_ip_avg_freq, log_src_ip_avg_freq
+    # === 加入 log frequency 特徵 ===
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", errors="coerce")
     ip_stats = df.groupby("src_ip")["timestamp"].agg(["count", "min", "max"])
     ip_stats["duration"] = (ip_stats["max"] - ip_stats["min"]).dt.total_seconds().replace(0, 1)
-    ip_stats["avg_freq"] = ip_stats["count"] / ip_stats["duration"]
-    df["src_ip_avg_freq"] = df["src_ip"].map(ip_stats["avg_freq"].to_dict())
-    df["log_src_ip_avg_freq"] = np.log1p(df["src_ip_avg_freq"])
+    ip_stats["log_freq"] = np.log1p(ip_stats["count"] / ip_stats["duration"])
+    df["log_src_ip_avg_freq"] = df["src_ip"].map(ip_stats["log_freq"].to_dict())
 
     file_num = count_files("new_dataset/csv")
     csv_path = f"new_dataset/csv/traffic_data{file_num}.csv"

@@ -5,7 +5,7 @@ from glob import glob
 
 # 路徑設定
 input_dir = "./new_dataset/csv"
-output_dir = "./new_dataset/cleaned_csv_simple_freq"
+output_dir = "./new_dataset/cleaned_csv_simplelog_freq"
 os.makedirs(output_dir, exist_ok=True)
 
 # 處理每個 CSV 檔案
@@ -19,15 +19,14 @@ for path in csv_files:
             df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
             df = df.sort_values("timestamp")
 
-            # 依 IP 統計：發包數與時間區間
+            # 計算 log frequency
             ip_stats = df.groupby("src_ip")["timestamp"].agg(["count", "min", "max"])
             ip_stats["duration"] = (ip_stats["max"] - ip_stats["min"]).dt.total_seconds().replace(0, 1)
-            ip_stats["freq"] = ip_stats["count"] / ip_stats["duration"]
-            ip_freq_dict = ip_stats["freq"].to_dict()
+            ip_stats["log_freq"] = np.log1p(ip_stats["count"] / ip_stats["duration"])
+            ip_freq_dict = ip_stats["log_freq"].to_dict()
 
             # 映射回原資料
-            df["src_ip_avg_freq"] = df["src_ip"].map(ip_freq_dict)
-            df["log_src_ip_avg_freq"] = np.log1p(df["src_ip_avg_freq"])
+            df["log_src_ip_avg_freq"] = df["src_ip"].map(ip_freq_dict)
 
         # 移除無用欄位
         df.drop(columns=["timestamp", "global_delta_time"], inplace=True, errors="ignore")
