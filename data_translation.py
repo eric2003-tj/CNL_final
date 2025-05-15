@@ -4,8 +4,8 @@ import numpy as np
 from glob import glob
 
 # 路徑設定
-input_dir = "./new_dataset/csv"
-output_dir = "./new_dataset/cleaned_csv_simplelog_freq"
+input_dir = "./new_dataset/cleaned_csv_simplelog_freq"
+output_dir = "./new_dataset/new_cleaned_csv_simplelog_freq"
 os.makedirs(output_dir, exist_ok=True)
 
 # 處理每個 CSV 檔案
@@ -28,8 +28,9 @@ for path in csv_files:
             # 映射回原資料
             df["log_src_ip_avg_freq"] = df["src_ip"].map(ip_freq_dict)
 
-        # 移除無用欄位
-        df.drop(columns=["timestamp", "global_delta_time"], inplace=True, errors="ignore")
+        # === 僅保留需要的欄位 ===
+        keep_cols = ["src_ip_delta_time", "log_src_ip_avg_freq", "src_ip", "dst_ip"]
+        df = df[[col for col in keep_cols if col in df.columns]]
 
         # 儲存
         filename = os.path.basename(path)

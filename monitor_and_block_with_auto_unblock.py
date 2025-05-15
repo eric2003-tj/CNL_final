@@ -2,7 +2,7 @@ import os
 import glob
 import time
 import shutil
-from scapy.all import rdpcap, IP, TCP, UDP, Raw
+from scapy.all import rdpcap, IP
 import pandas as pd
 import numpy as np
 import joblib
@@ -79,40 +79,11 @@ def process_pcap(pcap_file):
             if ip_delta < 0 or global_delta < 0:
                 continue
 
-            proto = "Other"
-            dst_port = None
-            src_port = None
-            flags = None
-            ttl = pkt[IP].ttl
-            payload_len = len(pkt[Raw].load) if Raw in pkt else 0
-            tcp_window = pkt[TCP].window if TCP in pkt else None
-            tcp_flags_int = pkt[TCP].flags.value if TCP in pkt else None
-
-            if TCP in pkt:
-                proto = "TCP"
-                dst_port = pkt[TCP].dport
-                src_port = pkt[TCP].sport
-                flags = pkt[TCP].flags
-            elif UDP in pkt:
-                proto = "UDP"
-                dst_port = pkt[UDP].dport
-                src_port = pkt[UDP].sport
-
             data.append({
                 "timestamp": t,
                 "src_ip_delta_time": ip_delta,
                 "src_ip": src_ip,
-                "dst_ip": dst_ip,
-                "src_port": src_port,
-                "dst_port": dst_port,
-                "protocol": proto,
-                "packet_length": len(pkt),
-                "payload_len": payload_len,
-                "ttl": ttl,
-                "tcp_flags": str(flags),
-                "tcp_flags_int": tcp_flags_int,
-                "tcp_window": tcp_window,
-                "index": i
+                "dst_ip": dst_ip
             })
 
     if not data:
@@ -120,9 +91,8 @@ def process_pcap(pcap_file):
         return
 
     df = pd.DataFrame(data)
-
-    # === 加入 log frequency 特徵 ===
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", errors="coerce")
+
     ip_stats = df.groupby("src_ip")["timestamp"].agg(["count", "min", "max"])
     ip_stats["duration"] = (ip_stats["max"] - ip_stats["min"]).dt.total_seconds().replace(0, 1)
     ip_stats["log_freq"] = np.log1p(ip_stats["count"] / ip_stats["duration"])
@@ -139,25 +109,11 @@ def predict_and_block(csv_path):
     df = pd.read_csv(csv_path)
     df.fillna({
         "src_ip_delta_time": 0,
-        "src_port": -1,
-        "dst_port": -1,
-        "packet_length": 0,
-        "payload_len": 0,
-        "ttl": 0,
-        "tcp_flags_int": 0,
-        "tcp_window": 0,
         "log_src_ip_avg_freq": 0
     }, inplace=True)
 
     features = [
         "src_ip_delta_time",
-        "src_port",
-        "dst_port",
-        "packet_length",
-        "payload_len",
-        "ttl",
-        "tcp_flags_int",
-        "tcp_window",
         "log_src_ip_avg_freq"
     ]
 
