@@ -10,8 +10,10 @@ import subprocess
 import socket
 
 # === 初始化資料夾 ===
-os.makedirs("new_dataset/csv", exist_ok=True)
-os.makedirs("processed", exist_ok=True)
+csv_output_path = "new_dataset/new_cleaned_csv_simplelog_freq"
+processed_path = "processed"
+os.makedirs(csv_output_path, exist_ok=True)
+os.makedirs(processed_path, exist_ok=True)
 
 # === 載入模型與標準化器 ===
 model = joblib.load("isolation_forest_model.joblib")
@@ -152,8 +154,8 @@ def process_pcap(pcap_file):
     stat_df = stat_df[keep_cols]
 
 
-    file_num = count_files("new_dataset/csv")
-    csv_path = f"new_dataset/csv/traffic_data{file_num}_new.csv"
+    file_num = count_files(csv_output_path)
+    csv_path = csv_output_path + f"/traffic_data{file_num}_new.csv"
     stat_df.to_csv(csv_path, index=False)
     print(f"✅ CSV 已儲存: {csv_path} ({len(stat_df)} 筆)")
 
