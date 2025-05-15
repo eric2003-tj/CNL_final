@@ -51,7 +51,7 @@ def unblock_ip():
             lines = f.read().splitlines()
         lines = [line for line in lines if not line.startswith(ip + " ")]
         with open(BLOCKED_PATH, "w") as f:
-            f.write("\\n".join(lines) + "\\n")
+            f.write("\n".join(lines) + "\n")
 
     return jsonify({"status": "unblocked", "ip": ip})
 
