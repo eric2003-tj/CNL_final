@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>防火牆控制面板</title>
+    <script>
+        async function fetchBlockedIPs() {
+            const res = await fetch("/api/blocked_ips");
+            const data = await res.json();
+            const table = document.getElementById("ipTable");
+            table.innerHTML = "<tr><th>IP 位址</th><th>封鎖秒數</th><th>操作</th></tr>";
+            data.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${entry.ip}</td>
+                    <td>${entry.seconds_blocked}</td>
+                    <td><button onclick="unblock('${entry.ip}')">解封</button></td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        async function unblock(ip) {
+            const res = await fetch("/api/unblock", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ip: ip })
+            });
+            if (res.ok) {
+                alert(`✅ 已解封 IP: ${ip}`);
+                fetchBlockedIPs();
+            } else {
+                alert(`❌ 解封失敗`);
+            }
+        }
+
+        window.onload = fetchBlockedIPs;
+    </script>
+</head>
+<body>
+    <h2>防火牆異常 IP 控制面板</h2>
+    <table border="1" id="ipTable"></table>
+</body>
+</html>
