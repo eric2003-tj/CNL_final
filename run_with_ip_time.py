@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import glob
 
-os.makedirs("mixed", exist_ok=True)
+os.makedirs("./new_dataset./csv", exist_ok=True)
 pcap_files = sorted(glob.glob("./new_dataset/*.pcap"))
 def count_files(directory):
     return sum(1 for entry in os.scandir(directory) if entry.is_file())
@@ -20,16 +20,6 @@ for file_cnt, pcap_file in enumerate(pcap_files):
             t = pkt.time
             src_ip = pkt[IP].src
             dst_ip = pkt[IP].dst
-
-            # delta_time: global and per-IP
-            global_delta = t - global_last_time if global_last_time else -10
-            global_last_time = t
-
-            ip_delta = t - last_seen_time[src_ip] if src_ip in last_seen_time else -10
-            last_seen_time[src_ip] = t
-
-            if ip_delta < 0 or global_delta < 0:
-                continue
 
             proto = "Other"
             dst_port = None
@@ -52,20 +42,16 @@ for file_cnt, pcap_file in enumerate(pcap_files):
 
             data.append({
                 "timestamp": t,
-                "global_delta_time": global_delta,
-                "src_ip_delta_time": ip_delta,
                 "src_ip": src_ip,
                 "dst_ip": dst_ip,
                 "src_port": src_port,
                 "dst_port": dst_port,
-                "protocol": proto,
                 "packet_length": len(pkt),
                 "payload_len": payload_len,
                 "ttl": ttl,
                 "tcp_flags": str(flags),
                 "tcp_flags_int": tcp_flags_int,
                 "tcp_window": tcp_window,
-                "index": i
             })
     df = pd.DataFrame(data)
     file_num = count_files("new_dataset/csv")

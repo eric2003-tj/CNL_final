@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import subprocess
+import socket
 
 # === 初始化資料夾 ===
 os.makedirs("new_dataset/csv", exist_ok=True)
@@ -21,6 +22,18 @@ processed_set = set(os.listdir("processed"))
 
 # === 自動解封設定（秒） ===
 UNBLOCK_AFTER_SECONDS = 600  # 10 分鐘
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # 向 Google DNS 建立一次連線，只為了取出本機 IP
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
+
+local_ip = get_local_ip()
 
 def count_files(directory):
     return sum(1 for entry in os.scandir(directory) if entry.is_file())
@@ -71,17 +84,8 @@ def process_pcap(pcap_file):
             t = pkt.time
             src_ip = pkt[IP].src
             dst_ip = pkt[IP].dst
-            global_delta = t - global_last_time if global_last_time else -10
-            global_last_time = t
-            ip_delta = t - last_seen_time[src_ip] if src_ip in last_seen_time else -10
-            last_seen_time[src_ip] = t
-
-            if ip_delta < 0 or global_delta < 0:
-                continue
-
             data.append({
                 "timestamp": t,
-                "src_ip_delta_time": ip_delta,
                 "src_ip": src_ip,
                 "dst_ip": dst_ip
             })
@@ -91,29 +95,85 @@ def process_pcap(pcap_file):
         return
 
     df = pd.DataFrame(data)
+    df["timestamp"] = pd.to_numeric(df["timestamp"], errors="coerce")
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s", errors="coerce")
+    df = df.dropna(subset=["timestamp", "src_ip", "dst_ip"])
+    df = df.sort_values("timestamp").reset_index(drop=True)
 
-    ip_stats = df.groupby("src_ip")["timestamp"].agg(["count", "min", "max"])
-    ip_stats["duration"] = (ip_stats["max"] - ip_stats["min"]).dt.total_seconds().replace(0, 1)
-    ip_stats["log_freq"] = np.log1p(ip_stats["count"] / ip_stats["duration"])
-    df["log_src_ip_avg_freq"] = df["src_ip"].map(ip_stats["log_freq"].to_dict())
+    # 新增 timestamp_seconds 欄位供滑動計算
+    df["timestamp_seconds"] = df["timestamp"].astype(np.int64) // 10**9
+    df["packet_count_5s"] = 0
+
+    # 滑動時間窗口計算 + 聚合統計
+    stat_list = []
+
+    for ip, group in df.groupby("src_ip"):
+        times = group["timestamp_seconds"].values
+        dst_ips = group["dst_ip"].values
+        counts = np.zeros(len(times), dtype=int)
+        left = 0
+        for right in range(len(times)):
+            while times[right] - times[left] > 5:
+                left += 1
+            counts[right] = right - left + 1
+
+        max_pc = counts.max()
+        mean_pc = counts.mean()
+        std_pc = counts.std()
+        unique_dst = len(set(dst_ips))
+
+        stat_list.append({
+            "src_ip": ip,
+            "packet_count_5s_max": max_pc,
+            "packet_count_5s_mean": mean_pc,
+            "packet_count_5s_std": std_pc,
+            "unique_dst_ip_count": unique_dst
+        })
+
+    stat_df = pd.DataFrame(stat_list)
+
+    # 加上 log_src_ip_avg_freq
+    ip_counts = df["src_ip"].value_counts()
+    ip_min_time = df.groupby("src_ip")["timestamp"].min()
+    ip_max_time = df.groupby("src_ip")["timestamp"].max()
+    duration = (ip_max_time - ip_min_time).dt.total_seconds().replace(0, 1)
+    log_freq = np.log1p(ip_counts / duration)
+    stat_df["log_src_ip_avg_freq"] = stat_df["src_ip"].map(log_freq)
+
+    # 選擇輸出欄位
+    keep_cols = [
+        "src_ip",
+        "packet_count_5s_max",
+        "packet_count_5s_mean",
+        "packet_count_5s_std",
+        "unique_dst_ip_count",
+        "log_src_ip_avg_freq"
+    ]
+    stat_df = stat_df[keep_cols]
+
 
     file_num = count_files("new_dataset/csv")
-    csv_path = f"new_dataset/csv/traffic_data{file_num}.csv"
-    df.to_csv(csv_path, index=False)
-    print(f"✅ CSV 已儲存: {csv_path} ({len(df)} 筆)")
+    csv_path = f"new_dataset/csv/traffic_data{file_num}_new.csv"
+    stat_df.to_csv(csv_path, index=False)
+    print(f"✅ CSV 已儲存: {csv_path} ({len(stat_df)} 筆)")
 
     return csv_path
 
 def predict_and_block(csv_path):
     df = pd.read_csv(csv_path)
     df.fillna({
-        "src_ip_delta_time": 0,
+        "packet_count_5s_max": 0,
+        "packet_count_5s_mean": 0,
+        "packet_count_5s_std": 0,
+        "unique_dst_ip_count": 0,
         "log_src_ip_avg_freq": 0
     }, inplace=True)
 
     features = [
-        "src_ip_delta_time",
+        "packet_count_5s_max",
+        "packet_count_5s_mean",
+        "packet_count_5s_std",
+        "unique_dst_ip_count",
         "log_src_ip_avg_freq"
     ]
 
@@ -123,7 +183,7 @@ def predict_and_block(csv_path):
 
     abnormal_df = df[df["anomaly"] == 1]
     ip_counts = abnormal_df["src_ip"].value_counts()
-    to_block_ips = ip_counts[ip_counts >= 5].index.tolist()
+    to_block_ips = ip_counts.index.tolist()
 
     print(f"🚨 符合封鎖門檻的 IP 數：{len(to_block_ips)}")
 
@@ -137,7 +197,7 @@ def predict_and_block(csv_path):
     with open(blocked_path, "a") as f:
         now = int(time.time())
         for ip in to_block_ips:
-            if ip not in already_blocked:
+            if ip != local_ip and ip not in already_blocked:
                 try:
                     subprocess.run(["sudo", "iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"], check=True)
                     new_blocked.append(ip)
@@ -145,6 +205,8 @@ def predict_and_block(csv_path):
                     print(f"✅ 已封鎖: {ip}")
                 except subprocess.CalledProcessError:
                     print(f"⚠️ 無法封鎖: {ip}")
+    # for ip in to_block_ips:
+    #     print(f"✅ 已封鎖: {ip}")
 
     if new_blocked:
         print(f"✅ 封鎖完成，共新增 {len(new_blocked)} IP")
@@ -163,4 +225,5 @@ while True:
             shutil.move(pcap, os.path.join("processed", os.path.basename(pcap)))
             processed_set.add(os.path.basename(pcap))
 
+    break
     time.sleep(30)
