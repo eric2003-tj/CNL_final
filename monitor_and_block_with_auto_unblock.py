@@ -135,32 +135,30 @@ def process_pcap(pcap_file):
 def predict_and_block(csv_path):
     df = pd.read_csv(csv_path)
     df.fillna({
-        "protocol": "Other",
-        "src_port": -1,
-        "dst_port": -1,
-        "packet_length": 0,
-        "payload_len": 0,
-        "ttl": 0,
-        "tcp_flags_int": 0,
-        "tcp_window": 0,
-        "global_delta_time": 0,
-        "src_ip_delta_time": 0
-    }, inplace=True)
+    "src_ip_delta_time": 0,
+    "src_port": -1,
+    "dst_port": -1,
+    "packet_length": 0,
+    "payload_len": 0,
+    "ttl": 0,
+    "tcp_flags_int": 0,
+    "tcp_window": 0,
+    "log_src_ip_avg_freq": 0
+}, inplace=True)
 
     df["protocol_encoded"] = pd.factorize(df["protocol"])[0]
 
     features = [
-        "protocol_encoded",
-        "src_port",
-        "dst_port",
-        "packet_length",
-        "payload_len",
-        "ttl",
-        "tcp_flags_int",
-        "tcp_window",
-        "global_delta_time",
-        "src_ip_delta_time"
-    ]
+    "src_ip_delta_time",
+    "src_port",
+    "dst_port",
+    "packet_length",
+    "payload_len",
+    "ttl",
+    "tcp_flags_int",
+    "tcp_window",
+    "log_src_ip_avg_freq"
+]
     X = scaler.transform(df[features])
     df["prediction"] = model.predict(X)
     df["anomaly"] = df["prediction"].apply(lambda x: 1 if x == -1 else 0)
