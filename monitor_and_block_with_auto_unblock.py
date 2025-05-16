@@ -180,8 +180,8 @@ def predict_and_block(csv_path):
     ]
 
     X = scaler.transform(df[features])
-    df["prediction"] = model.predict(X)
-    df["anomaly"] = df["prediction"].apply(lambda x: 1 if x == -1 else 0)
+    df["score"] = model.decision_function(X)  # 越小越異常
+    df["anomaly"] = (df["score"] < -0.2).astype(int)
 
     abnormal_df = df[df["anomaly"] == 1]
     ip_counts = abnormal_df["src_ip"].value_counts()
