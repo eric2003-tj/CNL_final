@@ -36,7 +36,7 @@ def unblock_ip():
 
     try:
         result = subprocess.run(
-            ["sudo", "/usr/sbin/iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"],
+            ["sudo", "/usr/bin/iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"],
             check=True,
             capture_output=True,
             text=True
@@ -56,4 +56,4 @@ def unblock_ip():
     return jsonify({"status": "unblocked", "ip": ip})
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=500)
+    app.run(debug=True, host="0.0.0.0", port=5000)

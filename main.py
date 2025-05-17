@@ -23,7 +23,7 @@ def run_model_once():
         print(f"⚠️ Error while running {mo_script}: {e}")
         return False
     try:
-        subprocess.run(["python3", app_script], check=True)
+        subprocess.Popen(["python3", app_script])
     except subprocess.CalledProcessError as e:
         print(f"⚠️ Error while running {app_script}: {e}")
         return False
