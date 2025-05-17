@@ -218,7 +218,7 @@ def predict_and_block(csv_path):
     if new_blocked:
         print(f"✅ 封鎖完成，共新增 {len(new_blocked)} IP")
 
-# === 主迴圈（每 30 秒掃描新封包） ===
+# === 主迴圈（每 2 秒掃描新封包） ===
 print("🛡️ 開始持續監控封包並封鎖異常 IP...\n")
 while True:
     auto_unblock()
@@ -233,4 +233,4 @@ while True:
             processed_set.add(os.path.basename(pcap))
 
     break
-    time.sleep(30)
+    time.sleep(2)
