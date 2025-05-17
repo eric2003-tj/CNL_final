@@ -27,6 +27,7 @@ def run_model_once():
     except subprocess.CalledProcessError as e:
         print(f"⚠️ Error while running {app_script}: {e}")
         return False
+    return True
 
 # === Step 2: Repeated tcpdump -c 100000
 def start_capture_loop():
