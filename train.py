@@ -37,19 +37,21 @@ df = combined_df
 
 # Handle missing values
 df.fillna({
-    "packet_count_5s_max": 0,
-    "packet_count_5s_mean": 0,
-    "packet_count_5s_std": 0,
+    "packet_count_2s_max": 0,
+    "packet_count_2s_mean": 0,
+    "packet_count_2s_std": 0,
     "unique_dst_ip_count": 0,
+    "packet_count_total": 0,
     "log_src_ip_avg_freq": 0
 }, inplace=True)
 
 # Define features to use
 feature_cols = [
-    "packet_count_5s_max",
-    "packet_count_5s_mean",
-    "packet_count_5s_std",
+    "packet_count_2s_max",
+    "packet_count_2s_mean",
+    "packet_count_2s_std",
     "unique_dst_ip_count",
+    "packet_count_total",
     "log_src_ip_avg_freq"
 ]
 

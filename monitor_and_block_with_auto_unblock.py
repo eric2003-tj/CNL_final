@@ -104,7 +104,7 @@ def process_pcap(pcap_file):
 
     # 新增 timestamp_seconds 欄位供滑動計算
     df["timestamp_seconds"] = df["timestamp"].astype(np.int64) // 10**9
-    df["packet_count_5s"] = 0
+    df["packet_count_2s"] = 0
 
     # 滑動時間窗口計算 + 聚合統計
     stat_list = []
@@ -115,7 +115,7 @@ def process_pcap(pcap_file):
         counts = np.zeros(len(times), dtype=int)
         left = 0
         for right in range(len(times)):
-            while times[right] - times[left] > 5:
+            while times[right] - times[left] > 2:
                 left += 1
             counts[right] = right - left + 1
 
@@ -123,13 +123,15 @@ def process_pcap(pcap_file):
         mean_pc = counts.mean()
         std_pc = counts.std()
         unique_dst = len(set(dst_ips))
+        total_count = len(times)
 
         stat_list.append({
             "src_ip": ip,
-            "packet_count_5s_max": max_pc,
-            "packet_count_5s_mean": mean_pc,
-            "packet_count_5s_std": std_pc,
-            "unique_dst_ip_count": unique_dst
+            "packet_count_2s_max": max_pc,
+            "packet_count_2s_mean": mean_pc,
+            "packet_count_2s_std": std_pc,
+            "unique_dst_ip_count": unique_dst,
+            "packet_count_total": total_count
         })
 
     stat_df = pd.DataFrame(stat_list)
@@ -145,10 +147,11 @@ def process_pcap(pcap_file):
     # 選擇輸出欄位
     keep_cols = [
         "src_ip",
-        "packet_count_5s_max",
-        "packet_count_5s_mean",
-        "packet_count_5s_std",
+        "packet_count_2s_max",
+        "packet_count_2s_mean",
+        "packet_count_2s_std",
         "unique_dst_ip_count",
+        "packet_count_total",
         "log_src_ip_avg_freq"
     ]
     stat_df = stat_df[keep_cols]
@@ -164,18 +167,20 @@ def process_pcap(pcap_file):
 def predict_and_block(csv_path):
     df = pd.read_csv(csv_path)
     df.fillna({
-        "packet_count_5s_max": 0,
-        "packet_count_5s_mean": 0,
-        "packet_count_5s_std": 0,
+        "packet_count_2s_max": 0,
+        "packet_count_2s_mean": 0,
+        "packet_count_2s_std": 0,
         "unique_dst_ip_count": 0,
+        "packet_count_total": 0,
         "log_src_ip_avg_freq": 0
     }, inplace=True)
 
     features = [
-        "packet_count_5s_max",
-        "packet_count_5s_mean",
-        "packet_count_5s_std",
+        "packet_count_2s_max",
+        "packet_count_2s_mean",
+        "packet_count_2s_std",
         "unique_dst_ip_count",
+        "packet_count_total",
         "log_src_ip_avg_freq"
     ]
 

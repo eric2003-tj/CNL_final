@@ -12,6 +12,20 @@ os.makedirs(output_dir, exist_ok=True)
 csv_files = glob(os.path.join(input_dir, "*.csv"))
 
 for path in csv_files:
+    import os
+import pandas as pd
+import numpy as np
+from glob import glob
+
+# 設定資料夾路徑
+input_dir = "./new_dataset/csv"
+output_dir = "./new_dataset/new_cleaned_csv_simplelog_freq"
+os.makedirs(output_dir, exist_ok=True)
+
+# 處理每個 CSV 檔案
+csv_files = glob(os.path.join(input_dir, "*.csv"))
+
+for path in csv_files:
     try:
         df = pd.read_csv(path)
 
@@ -24,7 +38,7 @@ for path in csv_files:
 
             # 新增 timestamp_seconds 欄位供滑動計算
             df["timestamp_seconds"] = df["timestamp"].astype(np.int64) // 10**9
-            df["packet_count_5s"] = 0
+            df["packet_count_2s"] = 0
 
             # 滑動時間窗口計算 + 聚合統計
             stat_list = []
@@ -35,7 +49,7 @@ for path in csv_files:
                 counts = np.zeros(len(times), dtype=int)
                 left = 0
                 for right in range(len(times)):
-                    while times[right] - times[left] > 5:
+                    while times[right] - times[left] > 2:
                         left += 1
                     counts[right] = right - left + 1
 
@@ -43,13 +57,15 @@ for path in csv_files:
                 mean_pc = counts.mean()
                 std_pc = counts.std()
                 unique_dst = len(set(dst_ips))
+                total_count = len(times)
 
                 stat_list.append({
                     "src_ip": ip,
-                    "packet_count_5s_max": max_pc,
-                    "packet_count_5s_mean": mean_pc,
-                    "packet_count_5s_std": std_pc,
-                    "unique_dst_ip_count": unique_dst
+                    "packet_count_2s_max": max_pc,
+                    "packet_count_2s_mean": mean_pc,
+                    "packet_count_2s_std": std_pc,
+                    "unique_dst_ip_count": unique_dst,
+                    "packet_count_total": total_count
                 })
 
             stat_df = pd.DataFrame(stat_list)
@@ -65,10 +81,11 @@ for path in csv_files:
             # 選擇輸出欄位
             keep_cols = [
                 "src_ip",
-                "packet_count_5s_max",
-                "packet_count_5s_mean",
-                "packet_count_5s_std",
+                "packet_count_2s_max",
+                "packet_count_2s_mean",
+                "packet_count_2s_std",
                 "unique_dst_ip_count",
+                "packet_count_total",
                 "log_src_ip_avg_freq"
             ]
             stat_df = stat_df[keep_cols]
