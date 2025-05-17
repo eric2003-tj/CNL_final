@@ -38,9 +38,7 @@ def start_capture_loop():
         pcap_file = f"new_dataset/capture_{timestamp}.pcap"
         print(f"⏱️ Capturing packets to {pcap_file}")
         try:
-            subprocess.run([
-                "sudo", "tcpdump", "-c", "100000", "-w", pcap_file
-            ], check=True)
+            subprocess.run(["sudo", "/usr/bin/tcpdump", "-c", "100000", "-w", pcap_file], check=True)
             print(f"✅ Capture complete: {pcap_file}")
         except subprocess.CalledProcessError as e:
             print(f"⚠️ tcpdump failed: {e}")

@@ -36,7 +36,7 @@ def unblock_ip():
 
     try:
         result = subprocess.run(
-            ["sudo", "iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"],
+            ["sudo", "/usr/sbin/iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"],
             check=True,
             capture_output=True,
             text=True
