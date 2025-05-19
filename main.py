@@ -42,7 +42,7 @@ def start_capture_loop():
             print(f"✅ Capture complete: {pcap_file}")
         except subprocess.CalledProcessError as e:
             print(f"⚠️ tcpdump failed: {e}")
-        time.sleep(1)  # Optional: wait briefly before next loop
+        # time.sleep(1)  # Optional: wait briefly before next loop
 
 # === Main Execution ===
 if __name__ == "__main__":
