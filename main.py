@@ -54,15 +54,28 @@ def start_capture_loop():
     print("📡 Starting packet capture loop...")
 
     while True:
-        file_num = count_files("processed")
+        file_num = count_files("processed") + count_files(directory)
         pcap_file = directory + f"/capture_{file_num}.pcap"
         print(f"⏱️ Capturing to {pcap_file} ...")
 
+        blocked_ips = []
+        if os.path.exists("blocked_ips.txt"):
+            with open("blocked_ips.txt", "r") as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if parts:
+                        blocked_ips.append(parts[0])  # Only the IP
+
+        # Build filter string (once)
+        filter_expr = " and ".join([f"not src {ip}" for ip in blocked_ips]) if blocked_ips else ""
+        cmd = ["sudo", "/usr/bin/tcpdump", "-c", str(num), "-w", pcap_file]
+        if filter_expr:
+            cmd += ["-f", filter_expr]
+
+        print(cmd)
+
         try:
-            subprocess.run(
-                ["sudo", "/usr/bin/tcpdump", "-c", f"{num}", "-w", pcap_file],
-                check=True
-            )
+            subprocess.run( cmd, check=True)
             print(f"✅ Capture complete: {pcap_file}")
         except subprocess.CalledProcessError as e:
             print(f"⚠️ tcpdump failed: {e}")
@@ -79,7 +92,7 @@ def start_capture_loop():
             print(f"📊 Packets captured in file: {line_count}")
 
             ready_file = pcap_file.replace(".pcap", "_ready.pcap")
-            subprocess.run(["mv", pcap_file, ready_file], check=True)
+            os.rename(pcap_file, ready_file)
                     
             if line_count < num:
                 print(f"🛑 Capture was interrupted (packet count < {num}). Exiting loop.")
@@ -91,10 +104,20 @@ def start_capture_loop():
 
     print("👋 Packet capture loop exited.")
 
+import shutil
 # === Main Execution ===
 if __name__ == "__main__":
+    if os.path.exists(directory):
+        for f in os.listdir(directory):
+            full_path = os.path.join(directory, f)
+            try:
+                if os.path.isfile(full_path):
+                    os.remove(full_path)
+                elif os.path.isdir(full_path):
+                    shutil.rmtree(full_path)
+            except Exception as e:
+                print(f"⚠️ Could not delete {full_path}: {e}")
     try:
-        subprocess.run(f"rm -rf {directory}/*", shell=True, check=True)
         mo_proc, flask_proc = run_model_once()
         start_capture_loop()
     finally:
