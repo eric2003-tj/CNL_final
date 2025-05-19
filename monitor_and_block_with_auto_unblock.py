@@ -20,6 +20,7 @@ model = joblib.load("isolation_forest_model.joblib")
 scaler = joblib.load("feature_scaler.joblib")
 
 # === 追蹤已處理過的 pcap 檔案 ===
+subprocess.run("rm -rf processed/*", shell=True, check=True)
 processed_set = set(os.listdir("processed"))
 
 # === 自動解封設定（秒） ===
@@ -222,15 +223,15 @@ def predict_and_block(csv_path):
 print("🛡️ 開始持續監控封包並封鎖異常 IP...\n")
 while True:
     auto_unblock()
-    pcap_files = sorted(glob.glob("new_dataset/*.pcap"))
+    pcap_files = sorted(glob.glob("new_dataset/pcaps/*_ready.pcap"))
     new_files = [f for f in pcap_files if os.path.basename(f) not in processed_set]
 
-    for pcap in new_files:
-        csv_path = process_pcap(pcap)
-        if csv_path:
-            predict_and_block(csv_path)
-            shutil.move(pcap, os.path.join("processed", os.path.basename(pcap)))
-            processed_set.add(os.path.basename(pcap))
-
-    break
-    time.sleep(2)
+    if new_files:
+        for pcap in new_files:
+            csv_path = process_pcap(pcap)
+            if csv_path:
+                predict_and_block(csv_path)
+                shutil.move(pcap, os.path.join("processed", os.path.basename(pcap)))
+                processed_set.add(os.path.basename(pcap))
+    else:
+        time.sleep(2)
