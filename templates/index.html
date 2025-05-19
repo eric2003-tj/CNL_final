@@ -3,39 +3,102 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>防火牆控制面板</title>
-    <!-- Tailwind CSS CDN -->
+    <title>🌌 太空防火牆控制面板</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Background stars animation */
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .stars, .stars2, .stars3 {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-repeat: repeat;
+            background-size: contain;
+            z-index: 0;
+        }
+
+        .stars {
+            background-image: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/media/star.png');
+            animation: moveStars 200s linear infinite;
+        }
+
+        .stars2 {
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+            animation: moveStars 300s linear infinite;
+        }
+
+        .stars3 {
+            background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
+            animation: moveStars 500s linear infinite;
+        }
+
+        @keyframes moveStars {
+            from { transform: translateY(0); }
+            to { transform: translateY(-1000px); }
+        }
+
+        .glass {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .neon-btn {
+            background: #00ffff;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 8px #0ff, 0 0 16px #0ff;
+            transition: 0.3s;
+        }
+
+        .neon-btn:hover {
+            background: #00bbff;
+            box-shadow: 0 0 12px #0ff, 0 0 24px #0ff;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gray-100 flex flex-col">
+<body class="min-h-screen flex flex-col text-white relative z-10">
+
+    <!-- Star layers -->
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+
     <!-- Header -->
-    <header class="bg-indigo-600 shadow text-white py-4">
-        <h1 class="text-2xl font-semibold text-center">防火牆異常 IP 控制面板</h1>
+    <header class="bg-black bg-opacity-80 shadow text-cyan-300 py-4 z-10 relative">
+        <h1 class="text-3xl font-bold text-center">🚀 太空防火牆異常 IP 控制面板</h1>
     </header>
 
     <!-- Main -->
-    <main class="container mx-auto flex-1 px-4 py-6">
-        <div class="bg-white rounded-lg shadow-lg overflow-x-auto">
+    <main class="container mx-auto flex-1 px-4 py-10 z-10 relative">
+        <div class="glass rounded-lg shadow-lg overflow-x-auto p-6">
             <table class="min-w-full text-left text-sm">
-                <thead class="bg-gray-50 border-b">
+                <thead class="border-b border-gray-600 text-cyan-300">
                     <tr>
-                        <th class="px-6 py-3">IP 位址</th>
-                        <th class="px-6 py-3">封鎖秒數</th>
-                        <th class="px-6 py-3">操作</th>
+                        <th class="px-6 py-3">🛰️ IP 位址</th>
+                        <th class="px-6 py-3">🕒 封鎖秒數</th>
+                        <th class="px-6 py-3">🛠️ 操作</th>
                     </tr>
                 </thead>
-                <tbody id="ipTableBody" class="divide-y divide-gray-200"></tbody>
+                <tbody id="ipTableBody" class="divide-y divide-gray-700 text-white"></tbody>
             </table>
-            <!-- Empty‑state message -->
-            <div id="emptyState" class="hidden p-6 text-center text-gray-500">目前沒有被封鎖的 IP 🎉</div>
+            <div id="emptyState" class="hidden p-6 text-center text-gray-300">🎉 目前沒有被封鎖的 IP</div>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="text-center text-xs text-gray-400 py-4">&copy; 2025 Firewall Dashboard</footer>
+    <footer class="text-center text-xs text-gray-400 py-4 bg-black bg-opacity-60 z-10 relative">
+        &copy; 2025 Cosmic Firewall 🌠 | Made with 💫
+    </footer>
 
+    <!-- Script -->
     <script>
-        // 取得封鎖 IP 清單並更新表格
         async function fetchBlockedIPs() {
             try {
                 const res = await fetch("/api/blocked_ips");
@@ -57,17 +120,16 @@
                         <td class="px-6 py-4 font-mono">${entry.ip}</td>
                         <td class="px-6 py-4">${entry.seconds_blocked}</td>
                         <td class="px-6 py-4">
-                            <button class="px-3 py-1 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white" onclick="unblock('${entry.ip}')">解封</button>
+                            <button class="neon-btn px-3 py-1 rounded-md" onclick="unblock('${entry.ip}')">解封</button>
                         </td>`;
                     tbody.appendChild(tr);
                 });
             } catch (err) {
-                alert("❌ 無法載入 IP 清單");
+                alert("❌ 無法載入 IP 清單");
                 console.error(err);
             }
         }
 
-        // 解封指定 IP
         async function unblock(ip) {
             try {
                 const res = await fetch("/api/unblock", {
@@ -76,7 +138,7 @@
                     body: JSON.stringify({ ip }),
                 });
                 if (res.ok) {
-                    alert(`✅ 已解封 IP: ${ip}`);
+                    alert(`✅ 已解封 IP: ${ip}`);
                     fetchBlockedIPs();
                 } else {
                     alert("❌ 解封失敗");
@@ -87,10 +149,9 @@
             }
         }
 
-        // 初始載入 + 每 10 秒自動刷新
         window.onload = () => {
             fetchBlockedIPs();
-            setInterval(fetchBlockedIPs, 10_000);
+            setInterval(fetchBlockedIPs, 10000);
         };
     </script>
 </body>
