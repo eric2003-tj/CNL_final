@@ -1,158 +1,189 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🌌 太空防火牆控制面板</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Background stars animation */
-        body {
-            margin: 0;
-            background: #000;
-            overflow: hidden;
-            font-family: 'Segoe UI', sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🪐 太空防火牆控制面板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #000;
+      overflow: hidden;
+    }
 
-        .stars, .stars2, .stars3 {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background-repeat: repeat;
-            background-size: contain;
-            z-index: 0;
-        }
+    .stars, .stars2, .stars3 {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background-repeat: repeat;
+      background-size: contain;
+      z-index: 0;
+    }
 
-        .stars {
-            background-image: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/media/star.png');
-            animation: moveStars 200s linear infinite;
-        }
+    .stars {
+      background-image: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/media/star.png');
+      animation: moveStars 200s linear infinite;
+    }
+    .stars2 {
+      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+      animation: moveStars 300s linear infinite;
+    }
+    .stars3 {
+      background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
+      animation: moveStars 500s linear infinite;
+    }
 
-        .stars2 {
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-            animation: moveStars 300s linear infinite;
-        }
+    @keyframes moveStars {
+      from { transform: translateY(0); }
+      to { transform: translateY(-1000px); }
+    }
 
-        .stars3 {
-            background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
-            animation: moveStars 500s linear infinite;
-        }
+    .glass {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        @keyframes moveStars {
-            from { transform: translateY(0); }
-            to { transform: translateY(-1000px); }
-        }
+    .neon-btn {
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 0 8px #0ff, 0 0 16px #0ff;
+      transition: 0.3s;
+    }
 
-        .glass {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .neon-btn:hover {
+      background: #00bbff;
+      box-shadow: 0 0 12px #0ff, 0 0 24px #0ff;
+    }
 
-        .neon-btn {
-            background: #00ffff;
-            color: #000;
-            font-weight: bold;
-            box-shadow: 0 0 8px #0ff, 0 0 16px #0ff;
-            transition: 0.3s;
-        }
+    .planet {
+      position: fixed;
+      bottom: 50px;
+      right: 100px;
+      width: 100px;
+      height: 100px;
+      background: url('static/Jupiter.png') no-repeat center center;
+      background-size: cover;
+      border-radius: 50%;
+      animation: spin 60s linear infinite;
+      z-index: 2;
+    }
 
-        .neon-btn:hover {
-            background: #00bbff;
-            box-shadow: 0 0 12px #0ff, 0 0 24px #0ff;
-        }
-    </style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .shooting-star {
+      position: fixed;
+      width: 2px;
+      height: 80px;
+      background: linear-gradient(white, transparent);
+      top: -100px;
+      animation: shoot 5s linear infinite;
+      z-index: 2;
+      opacity: 0.8;
+    }
+
+    @keyframes shoot {
+      0% { transform: translate(0, 0) rotate(135deg); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translate(1200px, 800px) rotate(135deg); opacity: 0; }
+    }
+  </style>
 </head>
 <body class="min-h-screen flex flex-col text-white relative z-10">
+  <div class="stars"></div>
+  <div class="stars2"></div>
+  <div class="stars3"></div>
+  <div class="planet"></div>
+  <div class="shooting-star" style="left: 10%; animation-delay: 1s;"></div>
+  <div class="shooting-star" style="left: 30%; animation-delay: 3s;"></div>
+  <div class="shooting-star" style="left: 70%; animation-delay: 2s;"></div>
+  <div class="shooting-star" style="left: 90%; animation-delay: 4s;"></div>
 
-    <!-- Star layers -->
-    <div class="stars"></div>
-    <div class="stars2"></div>
-    <div class="stars3"></div>
+  <header class="bg-black bg-opacity-80 shadow text-cyan-300 py-4 z-10 relative">
+    <h1 class="text-3xl font-bold text-center">🚀 太空防火牆異常 IP 控制面板</h1>
+  </header>
 
-    <!-- Header -->
-    <header class="bg-black bg-opacity-80 shadow text-cyan-300 py-4 z-10 relative">
-        <h1 class="text-3xl font-bold text-center">🚀 太空防火牆異常 IP 控制面板</h1>
-    </header>
+  <main class="container mx-auto flex-1 px-4 py-10 z-10 relative">
+    <div class="glass rounded-lg shadow-lg overflow-x-auto p-6">
+      <table class="min-w-full text-left text-sm">
+        <thead class="border-b border-gray-600 text-cyan-300">
+          <tr>
+            <th class="px-6 py-3">🛰️ IP 位址</th>
+            <th class="px-6 py-3">🕒 封鎖秒數</th>
+            <th class="px-6 py-3">🛠️ 操作</th>
+          </tr>
+        </thead>
+        <tbody id="ipTableBody" class="divide-y divide-gray-700 text-white"></tbody>
+      </table>
+      <div id="emptyState" class="hidden p-6 text-center text-gray-300">🎉 目前沒有被封鎖的 IP</div>
+    </div>
+  </main>
 
-    <!-- Main -->
-    <main class="container mx-auto flex-1 px-4 py-10 z-10 relative">
-        <div class="glass rounded-lg shadow-lg overflow-x-auto p-6">
-            <table class="min-w-full text-left text-sm">
-                <thead class="border-b border-gray-600 text-cyan-300">
-                    <tr>
-                        <th class="px-6 py-3">🛰️ IP 位址</th>
-                        <th class="px-6 py-3">🕒 封鎖秒數</th>
-                        <th class="px-6 py-3">🛠️ 操作</th>
-                    </tr>
-                </thead>
-                <tbody id="ipTableBody" class="divide-y divide-gray-700 text-white"></tbody>
-            </table>
-            <div id="emptyState" class="hidden p-6 text-center text-gray-300">🎉 目前沒有被封鎖的 IP</div>
-        </div>
-    </main>
+  <footer class="text-center text-xs text-gray-400 py-4 bg-black bg-opacity-60 z-10 relative">
+    &copy; 2025 Cosmic Firewall 🌠 | Made with 💫
+  </footer>
 
-    <!-- Footer -->
-    <footer class="text-center text-xs text-gray-400 py-4 bg-black bg-opacity-60 z-10 relative">
-        &copy; 2025 Cosmic Firewall 🌠 | Made with 💫
-    </footer>
+  <script>
+    async function fetchBlockedIPs() {
+      try {
+        const res = await fetch("/api/blocked_ips");
+        const data = await res.json();
+        const tbody = document.getElementById("ipTableBody");
+        const empty = document.getElementById("emptyState");
 
-    <!-- Script -->
-    <script>
-        async function fetchBlockedIPs() {
-            try {
-                const res = await fetch("/api/blocked_ips");
-                const data = await res.json();
-                const tbody = document.getElementById("ipTableBody");
-                const empty = document.getElementById("emptyState");
+        tbody.innerHTML = "";
 
-                tbody.innerHTML = "";
-
-                if (data.length === 0) {
-                    empty.classList.remove("hidden");
-                    return;
-                }
-                empty.classList.add("hidden");
-
-                data.forEach((entry) => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-mono">${entry.ip}</td>
-                        <td class="px-6 py-4">${entry.seconds_blocked}</td>
-                        <td class="px-6 py-4">
-                            <button class="neon-btn px-3 py-1 rounded-md" onclick="unblock('${entry.ip}')">解封</button>
-                        </td>`;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                alert("❌ 無法載入 IP 清單");
-                console.error(err);
-            }
+        if (data.length === 0) {
+          empty.classList.remove("hidden");
+          return;
         }
+        empty.classList.add("hidden");
 
-        async function unblock(ip) {
-            try {
-                const res = await fetch("/api/unblock", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ip }),
-                });
-                if (res.ok) {
-                    alert(`✅ 已解封 IP: ${ip}`);
-                    fetchBlockedIPs();
-                } else {
-                    alert("❌ 解封失敗");
-                }
-            } catch (err) {
-                alert("❌ 解封失敗");
-                console.error(err);
-            }
+        data.forEach((entry) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="px-6 py-4 font-mono">${entry.ip}</td>
+            <td class="px-6 py-4">${entry.seconds_blocked}</td>
+            <td class="px-6 py-4">
+              <button class="neon-btn px-3 py-1 rounded-md" onclick="unblock('${entry.ip}')">解封</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        alert("❌ 無法載入 IP 清單");
+        console.error(err);
+      }
+    }
+
+    async function unblock(ip) {
+      try {
+        const res = await fetch("/api/unblock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ip }),
+        });
+        if (res.ok) {
+          alert(`✅ 已解封 IP: ${ip}`);
+          fetchBlockedIPs();
+        } else {
+          alert("❌ 解封失敗");
         }
+      } catch (err) {
+        alert("❌ 解封失敗");
+        console.error(err);
+      }
+    }
 
-        window.onload = () => {
-            fetchBlockedIPs();
-            setInterval(fetchBlockedIPs, 10000);
-        };
-    </script>
+    window.onload = () => {
+      fetchBlockedIPs();
+      setInterval(fetchBlockedIPs, 10000);
+    };
+  </script>
 </body>
 </html>
