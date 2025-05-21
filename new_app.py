@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template
 import subprocess
 import os
 import time
+import socket
 
 app = Flask(__name__, template_folder="templates")
 BLOCKED_PATH = "blocked_ips.txt"
@@ -14,7 +15,7 @@ def index():
 def get_blocked_ips():
     if not os.path.exists(BLOCKED_PATH):
         return jsonify([])
-
+        
     blocked_list = []
     with open(BLOCKED_PATH, "r") as f:
         for line in f:
@@ -27,6 +28,41 @@ def get_blocked_ips():
                     "seconds_blocked": int(time.time()) - int(ts)
                 })
     return jsonify(blocked_list)
+
+@app.route("/api/block_ip", methods=["POST"])
+def block_ip():
+    data = request.get_json()
+    ip = data.get("ip")
+    if not ip:
+        return jsonify({"error": "Missing IP"}), 400
+
+    # Block in iptables
+    try:
+        subprocess.run(
+            ["sudo", "/usr/sbin/iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"],
+            check=True
+        )
+    except Exception as e:
+        return jsonify({"error": f"iptables error: {str(e)}"}), 500
+
+    # Write to file
+    ts = int(time.time())
+    with open(BLOCKED_PATH, "a") as f:
+        f.write(f"{ip} {ts}\n")
+    return jsonify({"status": "blocked", "ip": ip, "timestamp": ts})
+
+@app.route("/api/machine_ip", methods=["GET"])
+def machine_ip():
+    # Get the local IP address of the current machine (eth0/wlan0)
+    ip = None
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+    except:
+        ip = "127.0.0.1"
+    return jsonify({"ip": ip})
 
 @app.route("/api/unblock", methods=["POST"])
 def unblock_ip():

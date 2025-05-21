@@ -9,74 +9,22 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #000;
-      overflow: hidden;
+      background: #000;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
-
-    .stars, .stars2, .stars3 {
+    .stars2, .stars3 {
       position: fixed;
       width: 100%;
       height: 100%;
       background-repeat: repeat;
       background-size: contain;
       z-index: 0;
+      pointer-events: none;
     }
-
-    .stars {
-      background-image: url('https://raw.githubusercontent.com/VincentGarreau/particles.js/master/demo/media/star.png');
-      animation: moveStars 200s linear infinite;
-    }
-    .stars2 {
-      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-      animation: moveStars 300s linear infinite;
-    }
-    .stars3 {
-      background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
-      animation: moveStars 500s linear infinite;
-    }
-
-    @keyframes moveStars {
-      from { transform: translateY(0); }
-      to { transform: translateY(-1000px); }
-    }
-
-    .glass {
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .neon-btn {
-      background: #00ffff;
-      color: #000;
-      font-weight: bold;
-      box-shadow: 0 0 8px #0ff, 0 0 16px #0ff;
-      transition: 0.3s;
-    }
-
-    .neon-btn:hover {
-      background: #00bbff;
-      box-shadow: 0 0 12px #0ff, 0 0 24px #0ff;
-    }
-
-    .planet {
-      position: fixed;
-      bottom: 50px;
-      right: 100px;
-      width: 100px;
-      height: 100px;
-      background: url('static/Jupiter.png') no-repeat center center;
-      background-size: cover;
-      border-radius: 50%;
-      animation: spin 60s linear infinite;
-      z-index: 2;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
+    .stars2 {background-image: url('https://www.transparenttextures.com/patterns/stardust.png'); animation: moveStars 300s linear infinite;}
+    .stars3 {background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png'); animation: moveStars 500s linear infinite;}
+    @keyframes moveStars {from {transform: translateY(0);} to {transform: translateY(-1000px);}}
     .shooting-star {
       position: fixed;
       width: 2px;
@@ -85,82 +33,150 @@
       top: -100px;
       animation: shoot 5s linear infinite;
       z-index: 2;
-      opacity: 0.8;
+      opacity: 0.85;
+      pointer-events: none;
     }
-
+    .shooting-star.s1 { left: 15%; animation-delay: 0.8s;}
+    .shooting-star.s2 { left: 55%; animation-delay: 2.2s;}
+    .shooting-star.s3 { left: 77%; animation-delay: 3.1s;}
     @keyframes shoot {
-      0% { transform: translate(0, 0) rotate(135deg); opacity: 0; }
-      10% { opacity: 1; }
-      100% { transform: translate(1200px, 800px) rotate(135deg); opacity: 0; }
+      0% { transform: translate(0,0) rotate(135deg); opacity: 0;}
+      10% {opacity:1;}
+      100% {transform: translate(600px,400px) rotate(135deg); opacity:0;}
     }
+    .nebula {
+      position: fixed; pointer-events: none;
+      filter: blur(25px); opacity:.45; z-index: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, #6af 0%, #0000 90%);
+      width: 250px; height: 120px; top: 8%; left: 7%;
+      animation: nebula-float 11s infinite alternate;
+    }
+    @keyframes nebula-float {0%{transform:translateY(0);}100%{transform:translateY(-20px);}}
+    .asteroid {
+      position: fixed; width: 32px; height: 20px; z-index:2; pointer-events:none; opacity:.5;
+      background: url('static/Asteroid_icon.jpg') no-repeat center/contain;
+      animation: asteroid-drift linear infinite;
+    }
+    .asteroid.a1 { left: 14%; top: 10%; animation-duration: 28s; }
+    .asteroid.a2 { left: 75%; top: 65%; animation-duration: 25s; }
+    @keyframes asteroid-drift {from{transform:translateY(0);}to{transform:translateY(-50vh) rotate(8deg);}}
+    .planet-wrap { position: fixed; bottom: 56px; right: 98px; width: 130px; height: 130px; z-index: 10; pointer-events: none; display: flex; align-items: center; justify-content: center;}
+    .planet-rotate-group {width: 130px; height: 130px; position: relative;}
+    .planet { width: 100px; height: 100px; background: url('static/Jupiter.png') no-repeat center center; background-size: cover; border-radius: 50%; animation: spin 60s linear infinite; pointer-events: auto; cursor: grab; position: absolute; left: 15px; top: 15px; z-index: 11;}
+    @keyframes spin {from { transform: rotate(0deg);} to { transform: rotate(360deg);}}
+    .ring { position: absolute; width: 128px; height: 22px; top: 54px; left: 1px; border-radius: 50%; border: 2.5px solid #00ffed44; border-left: 2.5px solid #0ffb; border-right: 2.5px solid #fff2; filter: blur(0.5px); z-index: 10; transform: rotate(-17deg);}
+    .planet-glow {position: absolute; left: 0; top: 0; width: 130px; height: 130px; background: radial-gradient(ellipse at 50% 55%, #37fff680 10%, #00c0a600 80%); opacity: .13; border-radius: 50%; z-index: 8; pointer-events: none; animation: planet-glow-pulse 6s infinite alternate;}
+    @keyframes planet-glow-pulse {0%{opacity: .10;}100%{opacity: .19;}}
+    .control-hud {position: fixed; left: 0; right: 0; bottom: 0; height: 46px; background: linear-gradient(90deg,#1a214055 10%, #00e9ff10 60%, #22214866 100%); border-top: 1.5px solid #11fff388; z-index: 40; display: flex; align-items: center; justify-content: center; gap: 22px;}
+    .hud-light {width: 10px; height: 10px; background: #3fffb0; border-radius: 50%; margin: 0 4px; box-shadow: 0 0 6px #3fffb0cc, 0 0 20px #0ff5; animation: light-blink 1.1s infinite alternate;}
+    .hud-light.r { background:#ff4088; box-shadow: 0 0 6px #ff4088cc, 0 0 20px #ff60e2a8; animation-delay: 0.37s;}
+    .hud-light.y { background:#ffd140; box-shadow: 0 0 6px #ffd140aa, 0 0 12px #ffee4060; animation-delay: 0.2s;}
+    @keyframes light-blink { to {opacity: 0.3;} }
+    .hud-panel { font-family: "Fira Mono", monospace; font-size: 13px; color: #99fff6; background: #11192577; border-radius: 9px; padding: 5px 15px; letter-spacing: 1.5px; border: 1px solid #00ffe222; display: flex; align-items: center; gap: 4px;}
+    .glass { background: rgba(0,0,0,0.65); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.09);}
+    .neon-btn { background: #00ffff; color: #000; font-weight: bold; box-shadow: 0 0 8px #0ff, 0 0 16px #0ff; transition: 0.3s;}
+    .neon-btn:hover, .neon-btn.active {background: #00bbff; box-shadow: 0 0 16px #0ff, 0 0 32px #0ff; color: #000; border-bottom: 3px solid #0ff;}
+    nav button.active {border-bottom: 2px solid #0ff; background: #0ff2; color: #0ff;}
+    .tab {transition: opacity 0.3s;}
+    ::-webkit-scrollbar-thumb {background: #222831; border-radius: 10px;}
+    ::-webkit-scrollbar {width: 8px; background: #000;}
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-white relative z-10">
-  <div class="stars"></div>
   <div class="stars2"></div>
   <div class="stars3"></div>
-  <div class="planet"></div>
-  <div class="shooting-star" style="left: 10%; animation-delay: 1s;"></div>
-  <div class="shooting-star" style="left: 30%; animation-delay: 3s;"></div>
-  <div class="shooting-star" style="left: 70%; animation-delay: 2s;"></div>
-  <div class="shooting-star" style="left: 90%; animation-delay: 4s;"></div>
-
-  <header class="bg-black bg-opacity-80 shadow text-cyan-300 py-4 z-10 relative">
-    <h1 class="text-3xl font-bold text-center">🚀 太空防火牆異常 IP 控制面板</h1>
-  </header>
-
-  <main class="container mx-auto flex-1 px-4 py-10 z-10 relative">
-    <div class="glass rounded-lg shadow-lg overflow-x-auto p-6">
-      <table class="min-w-full text-left text-sm">
-        <thead class="border-b border-gray-600 text-cyan-300">
-          <tr>
-            <th class="px-6 py-3">🛰️ IP 位址</th>
-            <th class="px-6 py-3">🕒 封鎖秒數</th>
-            <th class="px-6 py-3">🛠️ 操作</th>
-          </tr>
-        </thead>
-        <tbody id="ipTableBody" class="divide-y divide-gray-700 text-white"></tbody>
-      </table>
-      <div id="emptyState" class="hidden p-6 text-center text-gray-300">🎉 目前沒有被封鎖的 IP</div>
+  <div class="shooting-star s1"></div>
+  <div class="shooting-star s2"></div>
+  <div class="shooting-star s3"></div>
+  <div class="nebula"></div>
+  <div class="asteroid a1"></div>
+  <div class="asteroid a2"></div>
+  <div class="planet-wrap">
+    <div class="planet-rotate-group" id="planet-group">
+      <div class="planet-glow"></div>
+      <div class="ring" id="planet-ring"></div>
+      <div class="planet" id="planet"></div>
     </div>
+  </div>
+  <header class="bg-black bg-opacity-80 shadow text-cyan-300 py-4 z-10 relative">
+    <h1 class="text-3xl font-bold text-center tracking-wider">🚀 太空防火牆異常 IP 控制面板</h1>
+  </header>
+  <main class="container mx-auto flex-1 px-4 py-10 z-10 relative">
+    <nav class="flex space-x-4 mb-6 justify-center">
+      <button class="neon-btn px-4 py-2 rounded-lg" onclick="showTab('list')" id="tab-btn-list">🛰️ 已封鎖清單</button>
+      <button class="neon-btn px-4 py-2 rounded-lg" onclick="showTab('block')" id="tab-btn-block">🚫 封鎖新 IP</button>
+      <button class="neon-btn px-4 py-2 rounded-lg" onclick="showTab('machineip')" id="tab-btn-machineip">🪐 本機 IP</button>
+    </nav>
+    <section id="tab-list" class="tab">
+      <div class="glass rounded-lg shadow-lg overflow-x-auto p-6">
+        <table class="min-w-full text-left text-sm">
+          <thead class="border-b border-gray-600 text-cyan-300">
+            <tr>
+              <th class="px-6 py-3">🛰️ IP 位址</th>
+              <th class="px-6 py-3">🕒 封鎖秒數</th>
+              <th class="px-6 py-3">🛠️ 操作</th>
+            </tr>
+          </thead>
+          <tbody id="ipTableBody" class="divide-y divide-gray-700 text-white"></tbody>
+        </table>
+        <div id="emptyState" class="hidden p-6 text-center text-gray-300">🎉 目前沒有被封鎖的 IP</div>
+      </div>
+    </section>
+    <section id="tab-block" class="tab hidden">
+      <div class="glass rounded-lg shadow-lg max-w-md mx-auto p-8 flex flex-col items-center space-y-5">
+        <h2 class="text-2xl mb-2 text-cyan-200 text-center">封鎖新的 IP</h2>
+        <form id="blockForm" class="flex flex-col gap-4 w-full items-center">
+          <input type="text" class="w-full p-3 rounded-lg bg-black bg-opacity-40 border border-cyan-400 text-white font-mono" placeholder="請輸入要封鎖的 IP" id="blockIpInput" required>
+          <button type="submit" class="neon-btn px-4 py-2 rounded-lg">🚫 加入黑名單</button>
+        </form>
+        <div id="blockResult" class="mt-2 text-center"></div>
+      </div>
+    </section>
+    <section id="tab-machineip" class="tab hidden">
+      <div class="glass rounded-lg shadow-lg max-w-md mx-auto p-8 flex flex-col items-center">
+        <h2 class="text-2xl mb-4 text-cyan-200">🪐 本機 IP 位址</h2>
+        <div id="machineIp" class="text-xl font-mono text-yellow-200 p-4 rounded-lg bg-black bg-opacity-40 border border-cyan-500 shadow"></div>
+        <button onclick="fetchMachineIp()" class="neon-btn mt-6 px-4 py-2 rounded-lg">重新取得</button>
+      </div>
+    </section>
   </main>
-
-  <footer class="text-center text-xs text-gray-400 py-4 bg-black bg-opacity-60 z-10 relative">
-    &copy; 2025 Cosmic Firewall 🌠 | Made with 💫
-  </footer>
-
+  <div class="control-hud">
+    <div class="hud-light"></div>
+    <div class="hud-light y"></div>
+    <div class="hud-light r"></div>
+    <div class="hud-panel"><span>系統狀態: <span class="text-lime-400 animate-pulse">運行中</span></span></div>
+    <div class="hud-panel"><span>🚀 Cosmic Panel Online</span></div>
+  </div>
   <script>
+    // Tab Routing, UI, Drag-Spin (ring and planet together)
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-btn-' + tab).classList.add('active');
+      if (tab === 'list') fetchBlockedIPs();
+      if (tab === 'machineip') fetchMachineIp();
+    }
     async function fetchBlockedIPs() {
       try {
         const res = await fetch("/api/blocked_ips");
         const data = await res.json();
         const tbody = document.getElementById("ipTableBody");
         const empty = document.getElementById("emptyState");
-
         tbody.innerHTML = "";
-
-        if (data.length === 0) {
-          empty.classList.remove("hidden");
-          return;
-        }
+        if (!data.length) {empty.classList.remove("hidden"); return;}
         empty.classList.add("hidden");
-
-        data.forEach((entry) => {
+        data.forEach(entry => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td class="px-6 py-4 font-mono">${entry.ip}</td>
             <td class="px-6 py-4">${entry.seconds_blocked}</td>
-            <td class="px-6 py-4">
-              <button class="neon-btn px-3 py-1 rounded-md" onclick="unblock('${entry.ip}')">解封</button>
-            </td>`;
+            <td class="px-6 py-4"><button class="neon-btn px-3 py-1 rounded-md" onclick="unblock('${entry.ip}')">解封</button></td>`;
           tbody.appendChild(tr);
         });
-      } catch (err) {
-        alert("❌ 無法載入 IP 清單");
-        console.error(err);
-      }
+      } catch (err) {alert("❌ 無法載入 IP 清單");}
     }
-
     async function unblock(ip) {
       try {
         const res = await fetch("/api/unblock", {
@@ -168,22 +184,118 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ip }),
         });
-        if (res.ok) {
-          alert(`✅ 已解封 IP: ${ip}`);
-          fetchBlockedIPs();
-        } else {
-          alert("❌ 解封失敗");
+        if (res.ok) {alert(`✅ 已解封 IP: ${ip}`); fetchBlockedIPs();}
+        else {alert("❌ 解封失敗");}
+      } catch (err) {alert("❌ 解封失敗");}
+    }
+    document.getElementById("blockForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const ip = document.getElementById("blockIpInput").value.trim();
+      if (!ip) return;
+      const res = await fetch("/api/block_ip", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ip})
+      });
+      const resultDiv = document.getElementById("blockResult");
+      if (res.ok) {
+        resultDiv.textContent = "✅ 已成功封鎖 IP: " + ip;
+        document.getElementById("blockIpInput").value = "";
+        fetchBlockedIPs();
+      } else {
+        const err = await res.json();
+        resultDiv.textContent = "❌ 封鎖失敗: " + (err.error || "未知錯誤");
+      }
+    };
+    async function fetchMachineIp() {
+      const res = await fetch("/api/machine_ip");
+      const data = await res.json();
+      document.getElementById("machineIp").textContent = data.ip || "未知";
+    }
+    showTab('list');
+    setInterval(fetchBlockedIPs, 10000);
+    // Planet drag-spin (ring and planet together)
+    (function() {
+      const planet = document.getElementById('planet');
+      const ring = document.getElementById('planet-ring');
+      const group = document.getElementById('planet-group');
+      let dragging = false, startX = 0, angle = 0;
+      planet.addEventListener('mousedown', (e) => {dragging = true; startX = e.clientX; group.style.transition = 'none';});
+      document.addEventListener('mousemove', (e) => {
+        if (dragging) {
+          let dx = e.clientX - startX;
+          angle = (angle + dx/3) % 360;
+          group.style.transform = `rotate(${angle}deg)`;
+          startX = e.clientX;
         }
-      } catch (err) {
-        alert("❌ 解封失敗");
-        console.error(err);
+      });
+      document.addEventListener('mouseup', () => {if (dragging) {dragging = false; group.style.transition = ''; }});
+    })();
+  </script>
+  <!-- Canvas-nest lines with detail restored and efficient for modern browsers -->
+  <script>
+!function() {
+    let frame_func = func => window.setTimeout(func, 1000 / 30), random = Math.random;
+    let mouse_position = { x: null, y: null };
+    let n = 65, z = 2, o = 0.37, c = "10,220,255";
+    let canvas = document.createElement("canvas"), int = Math.floor;
+    canvas.style.cssText = `position:fixed;top:0;left:0;z-index:${z};opacity:${o};pointer-events:none;`;
+    document.body.appendChild(canvas);
+    function set_canvas_size() {canvas.width = window.innerWidth;canvas.height = window.innerHeight;}
+    set_canvas_size();
+    let points = [];
+    for (let i = 0; i < n; i++) {
+      let x = random() * canvas.width, y = random() * canvas.height, theta = random() * Math.PI * 2, vx = 1.2 * Math.cos(theta), vy = 1.2 * Math.sin(theta);
+      points.push({ x, y, vx, vy });
+    }
+    let context = canvas.getContext("2d");
+    window.onresize = set_canvas_size;
+    window.onmousemove = function(e) {mouse_position.x = e.clientX; mouse_position.y = e.clientY;};
+    window.onmouseout = function() {mouse_position.x = null; mouse_position.y = null;};
+    function get_dist(A, B) { return (A.x-B.x)*(A.x-B.x) + (A.y-B.y)*(A.y-B.y); }
+    function draw_lines() {
+      // More detail, as original
+      points.sort(function(A, B) {
+        return A.x != B.x ? A.x - B.x : A.y - B.y;
+      });
+      let res = Array(24); for(let w=0;w<24;w++) res[w]=[];
+      for(let i=0; i<n; i++) {
+        let cnt=0;
+        for(let j=i-1;j>=0;j--) {
+          let A=points[i],B=points[j],dist=get_dist(A,B),d=1-dist/6500;
+          if (d>0) {res[int(d*24)].push({u:A,v:B});cnt++;}
+          if(A.x-B.x>80||cnt>5) break;
+        }
+      }
+      points.forEach(function(p) {
+        let dist=get_dist(p,mouse_position),d=1-dist/18000;
+        if (d>0) res[int(d*24)].push({u:p,v:mouse_position});
+      });
+      for(let w=0;w<24;w++) {
+        context.lineWidth=w/24*1.2;
+        context.strokeStyle=`rgba(${c},${w/24+0.16})`;
+        context.beginPath();
+        res[w].forEach(line => {context.moveTo(int(line.u.x),int(line.u.y));context.lineTo(int(line.v.x),int(line.v.y));});
+        context.stroke();
       }
     }
-
-    window.onload = () => {
-      fetchBlockedIPs();
-      setInterval(fetchBlockedIPs, 10000);
-    };
+    function redraw() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      if (canvas.width < 480) return frame_func(redraw);
+      points.forEach(function(p) {
+        if (mouse_position.x!=null && mouse_position.y!=null) {
+          let dist = get_dist(p, mouse_position);
+          if(9500<=dist&&dist<18000) {
+            p.x+=p.vx;p.y+=p.vy;p.x-=0.02*(p.x-mouse_position.x);p.y-=0.02*(p.y-mouse_position.y);
+          } else {p.x+=p.vx;p.y+=p.vy;}
+        } else {p.x+=p.vx;p.y+=p.vy;}
+        p.vx *= p.x>canvas.width||p.x<0?-1:1; p.vy *= p.y>canvas.height||p.y<0?-1:1;
+      });
+      draw_lines();
+      frame_func(redraw);
+    }
+    frame_func(redraw);
+  }();
   </script>
 </body>
 </html>
