@@ -69,8 +69,10 @@ def auto_unblock():
         except ValueError:
             continue
 
+    ips_string = "\n".join(remaining) + "\n"
+    
     with open(blocked_path, "w") as f:
-        f.write("\n".join(remaining))
+        f.write(ips_string)
 
     if unblocked:
         print(f"✅ 自動解封完成，共移除 {len(unblocked)} 個 IP")
