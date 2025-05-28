@@ -6,6 +6,7 @@ import socket
 
 app = Flask(__name__, template_folder="templates")
 BLOCKED_PATH = "blocked_ips.txt"
+IPTABLES_PATH = "/usr/sbin/iptables"
 
 @app.route("/", methods=["GET"])
 def index():
@@ -72,7 +73,7 @@ def unblock_ip():
 
     try:
         result = subprocess.run(
-            ["sudo", "/usr/sbin/iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"],
+            ["sudo", IPTABLES_PATH, "-D", "INPUT", "-s", ip, "-j", "DROP"],
             check=True,
             capture_output=True,
             text=True

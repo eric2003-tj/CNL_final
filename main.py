@@ -7,6 +7,7 @@ import signal
 
 directory = "new_dataset/pcaps"
 num = 10000
+TCPDUMP_PATH = "/usr/bin/tcpdump"
 
 def count_files(directory):
     return sum(1 for entry in os.scandir(directory) if entry.is_file())
@@ -68,7 +69,7 @@ def start_capture_loop():
 
         # Build filter string (once)
         filter_expr = " and ".join([f"not src {ip}" for ip in blocked_ips]) if blocked_ips else ""
-        cmd = ["sudo", "/usr/bin/tcpdump", "-c", str(num), "-w", pcap_file]
+        cmd = ["sudo", TCPDUMP_PATH, "-c", str(num), "-w", pcap_file]
         if filter_expr:
             cmd += ["-f", filter_expr]
 
